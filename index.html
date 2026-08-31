@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gold AI">
 <meta name="theme-color" content="#12141A">
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%20%22Gold%20AI%20-%20%D7%9E%D7%A2%D7%A8%D7%9B%D7%AA%20%D7%94%D7%A1%D7%AA%D7%91%D7%A8%D7%95%D7%AA%20%D7%9E%D7%A1%D7%97%D7%A8%22%2C%20%22short_name%22%3A%20%22Gold%20AI%22%2C%20%22start_url%22%3A%20%22./%22%2C%20%22scope%22%3A%20%22./%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22background_color%22%3A%20%22%2312141A%22%2C%20%22theme_color%22%3A%20%22%2312141A%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22data%3Aimage/svg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICAgIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjAiIGZpbGw9IiMxMjE0MUEiLz4KICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjMwIiBmaWxsPSIjQzlBMjI3Ii8%2BCiAgICA8dGV4dCB4PSI1MCIgeT0iNTkiIGZvbnQtc2l6ZT0iMjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxMjE0MUEiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiPkF1PC90ZXh0PgogIDwvc3ZnPg%3D%3D%22%2C%20%22sizes%22%3A%20%22any%22%2C%20%22type%22%3A%20%22image/svg%2Bxml%22%2C%20%22purpose%22%3A%20%22any%20maskable%22%7D%5D%7D">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICAgIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjAiIGZpbGw9IiMxMjE0MUEiLz4KICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjMwIiBmaWxsPSIjQzlBMjI3Ii8+CiAgICA8dGV4dCB4PSI1MCIgeT0iNTkiIGZvbnQtc2l6ZT0iMjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxMjE0MUEiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiPkF1PC90ZXh0PgogIDwvc3ZnPg==">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICAgIDxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjAiIGZpbGw9IiMxMjE0MUEiLz4KICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjMwIiBmaWxsPSIjQzlBMjI3Ii8+CiAgICA8dGV4dCB4PSI1MCIgeT0iNTkiIGZvbnQtc2l6ZT0iMjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxMjE0MUEiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiPkF1PC90ZXh0PgogIDwvc3ZnPg==">
 <title>Gold AI — מערכת הסתברות מסחר</title>
 <style>
   :root{
@@ -90,46 +93,6 @@
 
   .footer-note{font-size:11px; color:var(--text-dim); text-align:center; padding:10px 4px; line-height:1.6;}
 </style>
-<script>
-// Inject a Web App Manifest + minimal service worker at runtime (no separate hosting needed)
-// so Chrome/Android recognizes this page as an installable app.
-(function setupPWA(){
-  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" rx="20" fill="#12141A"/>
-    <circle cx="50" cy="50" r="30" fill="#C9A227"/>
-    <text x="50" y="59" font-size="28" text-anchor="middle" fill="#12141A" font-family="Arial" font-weight="bold">Au</text>
-  </svg>`;
-  const iconUri = 'data:image/svg+xml;base64,' + btoa(iconSvg);
-  const manifest = {
-    name: "Gold AI - מערכת הסתברות מסחר",
-    short_name: "Gold AI",
-    start_url: ".",
-    display: "standalone",
-    background_color: "#12141A",
-    theme_color: "#12141A",
-    icons: [{ src: iconUri, sizes: "any", type: "image/svg+xml", purpose: "any maskable" }]
-  };
-  const manifestUri = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = manifestUri;
-  document.head.appendChild(link);
-
-  const linkIcon = document.createElement('link');
-  linkIcon.rel = 'icon';
-  linkIcon.href = iconUri;
-  document.head.appendChild(linkIcon);
-  const appleIcon = document.createElement('link');
-  appleIcon.rel = 'apple-touch-icon';
-  appleIcon.href = iconUri;
-  document.head.appendChild(appleIcon);
-
-  if('serviceWorker' in navigator && location.protocol.startsWith('http')){
-    // Service worker registration from a blob URL is blocked by browsers for security reasons,
-    // so we skip it here. The manifest + icons above are enough for "Add to Home screen".
-  }
-})();
-</script>
 </head>
 <body>
 <div id="app">
@@ -161,32 +124,18 @@
       </div>
 
       <div class="card">
-        <h2>מד פוטנציאל (ציון משולב)</h2>
-        <div style="position:relative; height:34px; border-radius:8px; overflow:hidden; display:flex; direction:ltr;">
-          <div id="pmShort" style="background:rgba(226,96,79,.35); height:100%;"></div>
-          <div id="pmDead" style="background:rgba(122,128,144,.2); height:100%;"></div>
-          <div id="pmLong" style="background:rgba(63,182,139,.35); height:100%;"></div>
+        <h2>מד הסתברות כניסה</h2>
+        <div style="position:relative; height:34px; border-radius:8px; overflow:hidden; background:rgba(122,128,144,.2); direction:ltr;">
+          <div id="pmFill" style="height:100%; width:0%; background:var(--neutral); transition:width .3s, background .3s;"></div>
+          <div id="pmCutoff" style="position:absolute; top:0; bottom:0; width:2px; background:rgba(255,255,255,.5);"></div>
         </div>
         <div style="position:relative; height:16px; margin-top:2px; direction:ltr;">
-          <div id="pmMarker" style="position:absolute; top:-38px; width:2px; height:34px; background:var(--gold);"></div>
-          <div id="pmLabel" style="position:absolute; top:-38px; transform:translateX(-50%); font-family:var(--mono); font-size:12px; color:var(--gold); white-space:nowrap;">0</div>
+          <div id="pmLabel" style="position:absolute; top:-38px; transform:translateX(-50%); font-family:var(--mono); font-size:13px; font-weight:700; color:var(--gold); white-space:nowrap;">0%</div>
         </div>
         <div class="msg" style="display:flex; justify-content:space-between; margin-top:2px; direction:ltr; font-family:var(--mono);">
-          <span>-10</span><span>-5</span><span>0</span><span>+5</span><span>+10</span>
+          <span>0%</span><span>50%</span><span>100%</span>
         </div>
-        <div class="msg" style="display:flex; justify-content:space-between; direction:ltr;">
-          <span>SHORT</span><span>אין פוטנציאל</span><span>LONG</span>
-        </div>
-      </div>
-
-      <div class="card" id="activeSignalCard" style="display:none;">
-        <h2>עסקה פעילה (הטווח הקצר ביותר עם סיגנל)</h2>
-        <div class="grid2">
-          <div class="stat"><div class="lbl">כניסה</div><div class="val" id="asEntry">-</div></div>
-          <div class="stat"><div class="lbl">יעד</div><div class="val" id="asTarget">-</div></div>
-          <div class="stat"><div class="lbl">סיכון (סטופ)</div><div class="val" id="asRisk">-</div></div>
-          <div class="stat"><div class="lbl">אחרי ספרד</div><div class="val" id="asSpread">-</div></div>
-        </div>
+        <div class="msg" id="pmExplain">משלב: ציון 5 השכבות + מנוע P% + אישור תבנית בנר</div>
       </div>
 
       <div class="card">
@@ -200,7 +149,6 @@
         <div class="msg" id="usdIlsRateMsg" style="margin-top:8px;"></div>
       </div>
 
-      <button class="btn secondary" id="notifyBtn" style="margin-bottom:10px;">הפעילי התראות (צליל + רעידה)</button>
       <button class="btn secondary" id="refreshBtn">רענן נתונים עכשיו</button>
       <div class="footer-note">הסתברות סטטיסטית מבוססת-עבר על נכס זה בלבד. לא ייעוץ השקעות ולא ערבות לתוצאה.</div>
     </div>
@@ -304,6 +252,7 @@ let refreshTimer = null;
 let liveTickTimer = null;
 let lastR0 = null;
 let lastKnownClose = null;
+let lastUsdIls = null;
 
 async function liveTick(){
   if(!settings.apiKey || !historyCache) return;
@@ -549,41 +498,9 @@ async function fetchUsdIls(){
 }
 
 // ============================================================
-// ALERTS (sound + vibration + browser notification)
+// ALERTS — removed per user request. Kept as a no-op so existing calls don't break.
 // ============================================================
-function playBeep(){
-  try{
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    [0,220,440].forEach(delay=>{
-      setTimeout(()=>{
-        const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = 880; g.gain.value = 0.15;
-        o.start(); o.stop(ctx.currentTime+0.15);
-      }, delay);
-    });
-  }catch(e){ console.warn('beep failed', e); }
-}
-function vibrateNow(){ if(navigator.vibrate) navigator.vibrate([250,120,250,120,250]); }
-function notify(title, body){
-  playBeep(); vibrateNow();
-  if('Notification' in window && Notification.permission==='granted'){
-    try{ new Notification(title, {body, icon:''}); }catch(e){ console.warn('notify failed', e); }
-  }
-}
-document.getElementById('notifyBtn').addEventListener('click', async ()=>{
-  if('Notification' in window){
-    const perm = await Notification.requestPermission();
-    if(perm==='granted'){
-      notify('Gold AI', 'התראות הופעלו בהצלחה');
-      document.getElementById('notifyBtn').textContent = '✅ התראות פעילות';
-    }else{
-      renderBanner('ההתראות נחסמו בדפדפן - אפשר לאשר אותן דרך הגדרות האתר בדפדפן.', 'warn');
-    }
-  }else{
-    renderBanner('הדפדפן הזה לא תומך בהתראות.', 'warn');
-  }
-});
+function notify(title, body){ /* notifications disabled */ }
 
 // position open/close tracking (persisted so it survives app reopen)
 // Unified position monitor: opens on the intra-candle open-crossing pattern (both directions,
@@ -595,6 +512,20 @@ function loadPosState(){
 function savePosState(p){
   try{ localStorage.setItem('goldai_position', JSON.stringify(p)); }catch(e){}
 }
+function profitLossStats(entry, target, risk){
+  const targetPct = Math.abs(target-entry)/entry*100;
+  const riskPct = Math.abs(risk-entry)/entry*100;
+  const invest = 1000; // reference amount in ILS
+  const profitIls = invest * settings.leverage * (targetPct/100);
+  const lossIls = invest * settings.leverage * (riskPct/100);
+  return {targetPct, riskPct, profitIls, lossIls};
+}
+function plLine(entry, target, risk){
+  const pl = profitLossStats(entry, target, risk);
+  return `<span style="color:var(--up); font-size:13px;">רווח פוטנציאלי: +${fmt(pl.targetPct,2)}% (≈₪${fmt(pl.profitIls,0)} ל-1,000₪, מינוף 1:${settings.leverage})</span><br>` +
+    `<span style="color:var(--down); font-size:13px;">סיכון הפסד: -${fmt(pl.riskPct,2)}% (≈₪${fmt(pl.lossIls,0)} ל-1,000₪)</span>`;
+}
+
 function monitorPosition(legDir, mainAgrees, lastClose, r0){
   const pos = loadPosState();
   const earlyCard = document.getElementById('earlyCard');
@@ -620,6 +551,7 @@ function monitorPosition(legDir, mainAgrees, lastClose, r0){
         `<span style="color:var(--up)">כניסה בשער ${fmt(lastClose)}</span><br>` +
         `<span style="color:var(--gold)">יעד סגירה: ${fmt(target)}</span><br>` +
         `<span style="color:var(--down)">סטופ: ${fmt(risk)}</span><br>` +
+        plLine(lastClose, target, risk) + `<br>` +
         `<span style="color:var(--text-dim); font-size:13px;">${probLine}</span>`;
       earlyCard.style.display = 'block';
       notify('Gold AI - פתחי פוזיציה', `${legDir==='up'?'LONG':'SHORT'} בשער ${fmt(lastClose)}, יעד ${fmt(target)}, סטופ ${fmt(risk)}`);
@@ -634,6 +566,7 @@ function monitorPosition(legDir, mainAgrees, lastClose, r0){
   document.getElementById('earlyMsg').innerHTML = `${dirLabel} מאז ${fmt(pos.entry)}<br>` +
     `<span style="color:var(--gold)">יעד: ${fmt(pos.target)} | סטופ: ${fmt(pos.risk)}</span><br>` +
     `<span style="color:var(--text-dim);">מחיר נוכחי: ${fmt(lastClose)}</span><br>` +
+    plLine(pos.entry, pos.target, pos.risk) + `<br>` +
     `<span style="color:var(--text-dim); font-size:13px;">${probLine}</span>`;
   earlyCard.style.display = 'block';
 
@@ -746,28 +679,40 @@ function checkIntraCandlePattern(){
   return null;
 }
 
-function renderPotentialMeter(score){
-  const min=-10, max=10;
-  const thr = settings.scoreThreshold;
-  const shortW = (( -thr) - min) / (max-min) * 100;
-  const deadW = ((thr) - (-thr)) / (max-min) * 100;
-  const longW = (max - thr) / (max-min) * 100;
-  document.getElementById('pmShort').style.width = shortW+'%';
-  document.getElementById('pmDead').style.width = deadW+'%';
-  document.getElementById('pmLong').style.width = longW+'%';
+function renderProbabilityMeter(st, score, legDir, mainAgrees, r0){
+  // Direction implied by the combined score right now (even below the entry threshold, for a live-moving gauge)
+  const scoreDir = score >= 0 ? 'up' : 'down';
 
-  const clamped = Math.max(min, Math.min(max, score));
-  const pct = ((clamped-min)/(max-min))*100;
-  document.getElementById('pmMarker').style.left = `calc(${pct}% - 1px)`;
+  // Use the SAME final decision as the top message (r0), so the two never contradict each other.
+  // r0.dir is only 'up'/'down' when the P% engine clears BOTH the probability AND the statistical-edge bar.
+  const decided = r0 && (r0.dir==='up' || r0.dir==='down');
+  const entryProbability = decided ? r0.prob : Math.min(settings.minProb - 0.1, (st.probUp!=null ? (scoreDir==='up'?st.probUp:100-st.probUp) : 50));
+  const displayDir = decided ? r0.dir : scoreDir;
+
+  const fill = document.getElementById('pmFill');
+  fill.style.width = Math.max(0,Math.min(100,entryProbability)) + '%';
+  fill.style.background = displayDir==='up' ? 'var(--up)' : 'var(--down)';
+
+  const cutoffPct = settings.minProb;
+  document.getElementById('pmCutoff').style.left = cutoffPct + '%';
+
   const lbl = document.getElementById('pmLabel');
-  lbl.style.left = pct+'%';
-  lbl.textContent = fmt(score,1);
+  lbl.style.left = Math.max(0,Math.min(100,entryProbability)) + '%';
+  lbl.style.color = displayDir==='up' ? 'var(--up)' : 'var(--down)';
+  lbl.textContent = fmt(entryProbability,1) + '% ' + (displayDir==='up' ? 'LONG' : 'SHORT');
 
-  // Alert on entering a potential zone (separate from the entry/close alerts)
-  const zone = score>=thr ? 'long' : score<=-thr ? 'short' : 'none';
+  const patternConfirms = legDir === scoreDir && mainAgrees;
+  const explainParts = [];
+  explainParts.push(`ציון: ${fmt(score,1)}`);
+  explainParts.push(st.count>=settings.minSamples ? `P%: ${fmt(scoreDir==='up'?st.probUp:100-st.probUp,1)}%` : 'P%: אוסף נתונים');
+  explainParts.push(patternConfirms ? 'תבנית בנר: מאשרת ✓' : 'תבנית בנר: לא בוצעה');
+  document.getElementById('pmExplain').textContent = explainParts.join(' | ');
+
+  // Alert once when the SAME decision that drives the top message actually fires
+  const zone = decided ? displayDir : 'none';
   const prevZone = localStorage.getItem('goldai_lastZone') || 'none';
   if(zone!=='none' && zone!==prevZone){
-    notify('Gold AI - פוטנציאל זוהה', `פוטנציאל ל-${zone==='long'?'LONG':'SHORT'} (ציון ${fmt(score,1)})`);
+    notify('Gold AI - פוטנציאל זוהה', `הסתברות ${fmt(entryProbability,1)}% ל-${zone==='up'?'LONG':'SHORT'}`);
   }
   localStorage.setItem('goldai_lastZone', zone);
 }
@@ -882,6 +827,7 @@ async function refreshAll(){
     historyCache = await fetchHistory();
     const live = await fetchQuote();
     const usdIls = await fetchUsdIls();
+    lastUsdIls = usdIls;
     const {closes, highs, lows, opens} = historyCache;
     if(closes.length < settings.barsH3 + settings.minSamples){
       renderBanner('אין עדיין מספיק נתוני היסטוריה עבור טווח השבוע - חלק מהתחזיות יראו "אוסף נתונים".', 'warn');
@@ -891,17 +837,10 @@ async function refreshAll(){
     const lastClose = live || closes[closes.length-1];
     lastCombinedScore = currentScore; lastResistance = lr; lastSupport = ls; lastAtr = atrArr[atrArr.length-1];
     drawMiniChart(historyCache, lastClose, 30);
-    renderPotentialMeter(currentScore);
 
-    const horizonsBars = [settings.barsH1];
-    const results = horizonsBars.map(b=>{
-      const {hs,hm} = buildHorizon(scores, closes, b);
-      const st = matchStats(hs, hm, currentScore, settings.scoreBand);
-      return decide(st);
-    });
-
-    // ---- SIMPLE MESSAGE (next 4H candle only) ----
-    const r0 = results[0];
+    const {hs,hm} = buildHorizon(scores, closes, settings.barsH1);
+    const st = matchStats(hs, hm, currentScore, settings.scoreBand);
+    const r0 = decide(st);
     lastR0 = r0; lastKnownClose = lastClose;
     renderSimpleMessage(r0, lastClose);
 
@@ -910,24 +849,8 @@ async function refreshAll(){
     updateCandleLegs(candleOpen, lastClose);
     const legDir = checkIntraCandlePattern();
     const mainAgrees = legDir==='up' ? lastCombinedScore >= settings.scoreThreshold : legDir==='down' ? lastCombinedScore <= -settings.scoreThreshold : false;
+    renderProbabilityMeter(st, currentScore, legDir, mainAgrees, r0);
     monitorPosition(legDir, mainAgrees, lastClose, r0);
-
-    // active signal = shortest horizon with a direction
-    const active = results.find(r=> r.dir==='up'||r.dir==='down');
-    const activeCard = document.getElementById('activeSignalCard');
-    if(active){
-      const entry = lastClose;
-      const target = active.dir==='up' ? entry*(1+active.target/100) : entry*(1-active.target/100);
-      const risk = active.dir==='up' ? entry*(1-active.risk/100) : entry*(1+active.risk/100);
-      const netAfterSpread = Math.abs(target-entry) - settings.spreadCost;
-      document.getElementById('asEntry').textContent = fmt(entry);
-      document.getElementById('asTarget').textContent = fmt(target);
-      document.getElementById('asRisk').textContent = fmt(risk);
-      document.getElementById('asSpread').textContent = netAfterSpread>0 ? ('+$'+fmt(netAfterSpread)+' רווח נטו') : ('לא מכסה ספרד');
-      activeCard.style.display='block';
-    } else {
-      activeCard.style.display='none';
-    }
 
     // margin
     const notional = settings.posSize * lastClose;
