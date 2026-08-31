@@ -122,7 +122,7 @@
 
       <div class="card" id="manualPriceCard">
         <h2>עדכון ידני - בטחונות ומחיר</h2>
-        <div class="msg" style="margin-bottom:8px;"><b>שווי הזהב קובע את שער הכניסה/יעד/סטופ בכל החישובים. הבטחונות (עלות 1 אונקיה) נלקחים בדיוק כפי שהזנת - ולא מחושבים לבד - ומוכפלים ליניארית ל-10/20 אונקיות.</b> בתנודות חדות פלוס500 עשוי לתמחר מחדש - עדכני כאן את המספרים בפועל מהחשבון שלך.</div>
+        <div class="msg" style="margin-bottom:8px;"><b>זה כיול חד-פעמי, לא הקפאת מחיר: את מזינה פה תמונת מצב אחת (שווי + בטחונות בפועל מהחשבון שלך), והמערכת גוזרת מזה את היחס בין השווי לבטחונות. מרגע זה השווי ממשיך להתעדכן חי מהשוק, והבטחונות מחושבים אוטומטית לפי אותו יחס × המחיר החי - בלי שתצטרכי לעדכן שוב, אלא רק אם פלוס500 משנים את תנאי המינוף.</b></div>
         <label>בטחונות נדרשים ל-1 אונקיה ($)</label>
         <input type="number" id="manualMarginInput" step="0.01" placeholder="למשל 29.57">
         <label>אותם בטחונות ב-₪</label>
@@ -303,7 +303,8 @@ const DEFAULTS = {
   barsH1:1,
   posSize:1, leverage:150, spreadCost:0.88, commissionPerTrade:0, maintPct:0.33, scoreThreshold:5, riskPercentPerTrade:1, tailAtrMult:1.0,
   srProximityPts:3, atrStopMult:1.0, maxZoneAtrMult:15, overnightBuyPct:-0.0319, overnightSellPct:-0.0120, accountBalanceIls:1000,
-  priorTrendLookback:5, priorTrendAtrMult:1.5, manualPriceOverride:null, manualPriceOverrideIls:null, manualMarginOverride:null, manualMarginOverrideIls:null
+  priorTrendLookback:5, priorTrendAtrMult:1.5, manualPriceOverride:null, manualPriceOverrideIls:null, manualMarginOverride:null, manualMarginOverrideIls:null,
+  marginRatio:null, exchangeRateOverride:null
 };
 
 let settings = JSON.parse(JSON.stringify(DEFAULTS));
@@ -321,11 +322,8 @@ async function liveTick(){
   if(!settings.apiKey || !historyCache) return;
   try{
     let live = await fetchQuote();
-    if(settings.manualPriceOverride!=null){
-      live = settings.manualPriceOverride;
-      if(settings.manualPriceOverrideIls!=null){
-        lastUsdIls = settings.manualPriceOverrideIls / settings.manualPriceOverride;
-      }
+    if(settings.exchangeRateOverride!=null){
+      lastUsdIls = settings.exchangeRateOverride; // calibrated once, applied to the live price continuously
     }
     if(live){
       document.getElementById('livePrice').textContent = '$'+fmt(live);
@@ -623,8 +621,8 @@ function profitLossStats(entry, target, risk, dirUp, oz){
   oz = oz || 1;
   const targetPct = Math.abs(target-entry)/entry*100;
   const riskPct = Math.abs(risk-entry)/entry*100;
-  const useManualMargin = settings.manualMarginOverride!=null;
-  const marginUsd = useManualMargin ? settings.manualMarginOverride*oz : (oz * entry) / settings.leverage;
+  const useCalibratedMargin = settings.marginRatio!=null;
+  const marginUsd = useCalibratedMargin ? entry*oz*settings.marginRatio : (oz * entry) / settings.leverage;
   const grossProfitUsd = entry * (targetPct/100) * oz;
   const grossLossUsd = entry * (riskPct/100) * oz;
   const spreadCostUsd = settings.spreadCost * oz; // spread is a per-unit price difference, scales with size
@@ -937,11 +935,10 @@ function renderChangeStats(data, lastClose, st, currentScore){
         `<div style="font-weight:700; margin-bottom:6px; color:var(--gold);">${oz} אונקיות</div>` +
         `<div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-dim);">שער כניסה</span><span>${fmt(barEntry)}</span></div>` +
         (()=>{
-          const useManualMargin = settings.manualMarginOverride!=null;
-          const costUsd = useManualMargin ? settings.manualMarginOverride*oz : (barEntry*oz)/settings.leverage;
-          const costIls = useManualMargin && settings.manualMarginOverrideIls!=null ? settings.manualMarginOverrideIls*oz
-            : (lastUsdIls ? costUsd*lastUsdIls : null);
-          const costLabel = useManualMargin ? 'עלות (בטחונות ידניים)' : `עלות (מרווח נדרש, מינוף 1:${settings.leverage})`;
+          const useCalibratedMargin = settings.marginRatio!=null;
+          const costUsd = useCalibratedMargin ? barEntry*oz*settings.marginRatio : (barEntry*oz)/settings.leverage;
+          const costIls = lastUsdIls ? costUsd*lastUsdIls : null;
+          const costLabel = useCalibratedMargin ? 'עלות (בטחונות, מכויל ליחס שהזנת)' : `עלות (מרווח נדרש, מינוף 1:${settings.leverage})`;
           return `<div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-dim);">${costLabel}</span><span>$${fmt(costUsd,2)}${costIls!=null?' / ₪'+fmt(costIls,2):''}</span></div>`;
         })() +
         `<div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-dim);">שער יעד</span><span style="color:var(--up);">${fmt(barTarget)} (+${fmt(plN.targetPct,2)}% מחיר / +${fmt(plN.profitPctMargin,1)}% ממונף)</span></div>` +
@@ -1304,14 +1301,11 @@ function renderManualPriceCard(){
   document.getElementById('manualMarginIlsInput').value = settings.manualMarginOverrideIls!=null ? settings.manualMarginOverrideIls : '';
   renderDailyStatus('manualPriceDailyStatus', 'goldai_manualPriceUpdatedAt');
   const el = document.getElementById('manualPriceStatus');
-  const parts = [];
-  if(settings.manualPriceOverride!=null) parts.push(`שווי: $${fmt(settings.manualPriceOverride)}`);
-  if(settings.manualMarginOverride!=null) parts.push(`בטחונות: $${fmt(settings.manualMarginOverride,2)}`);
-  if(parts.length){
-    el.textContent = 'פעיל: ' + parts.join(' | ');
+  if(settings.marginRatio!=null){
+    el.textContent = `פעיל: יחס בטחונות מכויל (${fmt(settings.marginRatio*100,3)}% מהשווי) — מחושב אוטומטית על המחיר החי${settings.exchangeRateOverride!=null?`, שער $/₪ מכויל: ${fmt(settings.exchangeRateOverride,3)}`:''}`;
     el.style.color = 'var(--gold)';
   } else {
-    el.textContent = 'ריק - המערכת משתמשת בנתונים אוטומטיים';
+    el.textContent = 'ריק - המערכת משתמשת בנוסחה האוטומטית (מחיר÷מינוף) ובשער הנמשך אוטומטית';
     el.style.color = 'var(--text-dim)';
   }
 }
@@ -1330,6 +1324,10 @@ document.getElementById('saveManualPriceBtn').addEventListener('click', ()=>{
   settings.manualPriceOverrideIls = isNaN(valIls) ? null : valIls;
   settings.manualMarginOverride = isNaN(marginVal) ? null : marginVal;
   settings.manualMarginOverrideIls = isNaN(marginValIls) ? null : marginValIls;
+  // Derive the RATIOS from this one-time calibration — these are what persist and apply to the
+  // ever-updating live price, so margin/value stay in sync with the market automatically.
+  settings.marginRatio = (!isNaN(marginVal) && !isNaN(val) && val>0) ? marginVal/val : null;
+  settings.exchangeRateOverride = (!isNaN(valIls) && !isNaN(val) && val>0) ? valIls/val : null;
   saveSettings();
   if(!isNaN(val)) localStorage.setItem('goldai_manualPriceUpdatedAt', Date.now().toString());
   renderManualPriceCard();
@@ -1361,12 +1359,9 @@ async function refreshAll(){
     }
     const {scores, lastResistance:lr, lastSupport:ls, atrArr, ema200Last, ema50Last, rsiLast} = computeScores(historyCache);
     const currentScore = scores[scores.length-1];
-    let lastClose = live || closes[closes.length-1];
-    if(settings.manualPriceOverride!=null){
-      lastClose = settings.manualPriceOverride;
-      if(settings.manualPriceOverrideIls!=null){
-        lastUsdIls = settings.manualPriceOverrideIls / settings.manualPriceOverride; // Plus500's own actual rate
-      }
+    const lastClose = live || closes[closes.length-1];
+    if(settings.exchangeRateOverride!=null){
+      lastUsdIls = settings.exchangeRateOverride; // calibrated once, applied to the live price continuously
     }
     lastCombinedScore = currentScore; lastResistance = lr; lastSupport = ls; lastAtr = atrArr[atrArr.length-1];
     lastEma200 = ema200Last; lastEma50 = ema50Last; lastRsi = rsiLast;
