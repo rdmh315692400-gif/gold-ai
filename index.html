@@ -110,6 +110,39 @@
     <div class="view active" id="view-dashboard">
       <div id="banners"></div>
 
+      <div class="card">
+        <h2>שינויי אחוזים</h2>
+        <div class="grid2">
+          <div class="stat"><div class="lbl">שינוי יומי (מאז 01:00)</div><div class="val" id="chgDaily">-</div></div>
+          <div class="stat"><div class="lbl">שינוי בנר הנוכחי (4 שעות)</div><div class="val" id="chgCandle">-</div></div>
+        </div>
+        <div class="stat" style="margin-top:10px;"><div class="lbl">צפי שינוי מכניסה עד סגירה (P%)</div><div class="val" id="chgExpected">-</div><div class="lbl" id="chgExpectedPrices" style="margin-top:4px;"></div></div>
+        <div style="margin-top:10px;">
+          <div class="lbl" style="margin-bottom:4px;">סרגל יעד סגירת פוזיציה (נר 4 שעות)</div>
+          <div style="position:relative; height:26px; border-radius:8px; overflow:hidden; background:rgba(122,128,144,.2); direction:ltr;">
+            <div id="tgFill" style="height:100%; width:0%; background:var(--neutral);"></div>
+            <div id="tgEntryMark" style="position:absolute; top:0; bottom:0; width:2px; background:var(--gold);"></div>
+            <div id="tgNowMark" style="position:absolute; top:0; bottom:0; width:2px; background:#fff;"></div>
+          </div>
+          <div id="tgLabels" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 id="capCardTitle">רווח/הפסד צפוי בנר 4 שעות (P%)</h2>
+        <div class="grid2">
+          <div class="stat"><div class="lbl">צפי רווח נטו</div><div class="val" id="capProfitIls">-</div></div>
+          <div class="stat"><div class="lbl">צפי הפסד נטו</div><div class="val" id="capLossIls">-</div></div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div class="stat"><div class="lbl">תשואה על המרווח (רווח)</div><div class="val" id="capProfitPctMargin">-</div></div>
+          <div class="stat"><div class="lbl">תשואה על המרווח (הפסד)</div><div class="val" id="capLossPctMargin">-</div></div>
+        </div>
+        <div class="stat" style="margin-top:10px;"><div class="lbl">הון מומלץ בחשבון</div><div class="val" id="capRecommendedIls">-</div></div>
+        <div class="msg" id="capExplain" style="margin-top:6px;"></div>
+        <div class="section-title" style="margin:14px 0 6px;">פירוט מלא (רווח)</div>
+        <div id="capBreakdown" style="font-family:var(--mono); font-size:13px; line-height:1.9;"></div>
+
       <div class="card" style="padding:12px;">
         <h2 style="margin-bottom:8px;">נר 4 שעות — זהב</h2>
         <canvas id="miniChart" width="320" height="150" style="width:100%; height:150px; display:block;"></canvas>
@@ -163,8 +196,10 @@
         <div class="msg">הרשמה חינמית ב-twelvedata.com נותנת מפתח עם היסטוריית מחירים. בלי מפתח, האפליקציה לא יכולה למשוך נתונים.</div>
         <label>סימבול</label>
         <input type="text" id="symbol" value="XAU/USD">
-        <label>טווח נר (interval)</label>
-        <input type="text" id="interval" value="4h">
+        <label>אזור זמן (למספר השעות של גבולות הנר)</label>
+        <input type="text" id="timezone" value="Asia/Jerusalem">
+        <label>שעות תחילת נר 4H אצל הברוקר (מופרדות בפסיקים)</label>
+        <input type="text" id="candleBoundaryHours" value="1,5,9,13,17,21">
         <label>תדירות רענון אוטומטי (דקות)</label>
         <input type="number" id="refreshMinutes" value="15" min="1">
       </div>
@@ -189,14 +224,10 @@
         <input type="number" id="minProb" value="55">
       </div>
 
-      <div class="section-title">טווחי זמן (בנרות)</div>
+      <div class="section-title">טווח זמן (בנרות) — הסתברות מותאמת אך ורק לנר 4 שעות</div>
       <div class="card">
-        <label>טווח 1 (נר הבא)</label>
-        <input type="number" id="barsH1" value="1">
-        <label>טווח 2 (≈1 יום)</label>
-        <input type="number" id="barsH2" value="6">
-        <label>טווח 3 (≈1 שבוע)</label>
-        <input type="number" id="barsH3" value="30">
+        <label>טווח (נר 4 שעות הבא — לא ניתן לשינוי, זו כל התחזית)</label>
+        <input type="number" id="barsH1" value="1" disabled>
       </div>
 
       <div class="section-title">Plus500 - מרווח, מינוף, ספרד</div>
@@ -207,10 +238,26 @@
         <input type="number" id="leverage" value="150">
         <label>ספרד משוער ($)</label>
         <input type="number" id="spreadCost" value="0.88" step="0.01">
+        <label>עמלת פתיחה+סגירה משוער ($, ברוב ה-CFD כלול בספרד - 0 כברירת מחדל)</label>
+        <input type="number" id="commissionPerTrade" value="0" step="0.01">
         <label>בטחונות תחזוקה (%)</label>
         <input type="number" id="maintPct" value="0.33" step="0.01">
+        <label>אחוז סיכון מומלץ לעסקה מתוך ההון (%)</label>
+        <input type="number" id="riskPercentPerTrade" value="1" step="0.5">
         <label>סף ציון משולב לאישור כניסה (±)</label>
         <input type="number" id="scoreThreshold" value="5" step="0.5">
+        <label>גודל זנב "מרשים" (מכפיל ATR)</label>
+        <input type="number" id="tailAtrMult" value="1.0" step="0.1">
+        <label>קרבה לתמיכה/התנגדות שנחשבת "אזור" ($)</label>
+        <input type="number" id="srProximityPts" value="3" step="0.5">
+        <label>מרחק סטופ (מכפיל ATR)</label>
+        <input type="number" id="atrStopMult" value="1.0" step="0.1">
+        <label>מרחק מקסימלי סביר לאזור כניסה (מכפיל ATR)</label>
+        <input type="number" id="maxZoneAtrMult" value="15" step="0.5">
+        <label>מימון לילה - קניה (%, ב-00:00)</label>
+        <input type="number" id="overnightBuyPct" value="-0.0319" step="0.0001">
+        <label>מימון לילה - מכירה (%, ב-00:00)</label>
+        <input type="number" id="overnightSellPct" value="-0.0120" step="0.0001">
       </div>
 
       <button class="btn" id="saveBtn">שמור הגדרות ורענן</button>
@@ -231,7 +278,7 @@
 const DEFAULT_LAYERS = [
   {key:'trend',       label:'מגמה (EMA 20/50/200)', enabled:true, weight:1, available:true},
   {key:'momentum',    label:'מומנטום (RSI + MACD)',  enabled:true, weight:1, available:true},
-  {key:'volume',      label:'נפח מסחר',              enabled:true, weight:1, available:true},
+  {key:'volume',      label:'נפח מסחר',              enabled:true, weight:1, available:true, tag:'ב-CFD זה לרוב Tick Volume, לא מחזור השוק האמיתי'},
   {key:'priceAction', label:'Price Action (בליעות/פריצות)', enabled:true, weight:1, available:true},
   {key:'sr',          label:'תמיכה / התנגדות',        enabled:true, weight:1, available:true},
   {key:'macro',       label:'מאקרו (דולר/ריבית)',     enabled:false, weight:1, available:false, tag:'דורש מקור נתונים נוסף - לא מחובר בגרסה זו'},
@@ -240,10 +287,12 @@ const DEFAULT_LAYERS = [
 
 const DEFAULTS = {
   apiKey:'', symbol:'XAU/USD', interval:'4h', refreshMinutes:15,
+  timezone:'Asia/Jerusalem', candleBoundaryHours:[1,5,9,13,17,21],
   layers: DEFAULT_LAYERS,
   scoreBand:2.5, maxSamples:300, minSamples:20, minEdge:0.15, minProb:55,
-  barsH1:1, barsH2:6, barsH3:30,
-  posSize:1, leverage:150, spreadCost:0.88, maintPct:0.33, scoreThreshold:5
+  barsH1:1,
+  posSize:1, leverage:150, spreadCost:0.88, commissionPerTrade:0, maintPct:0.33, scoreThreshold:5, riskPercentPerTrade:1, tailAtrMult:1.0,
+  srProximityPts:3, atrStopMult:1.0, maxZoneAtrMult:15, overnightBuyPct:-0.0319, overnightSellPct:-0.0120
 };
 
 let settings = JSON.parse(JSON.stringify(DEFAULTS));
@@ -253,6 +302,9 @@ let liveTickTimer = null;
 let lastR0 = null;
 let lastKnownClose = null;
 let lastUsdIls = null;
+let lastSt = null;
+let lastCombinedScore = 0, lastResistance = null, lastSupport = null, lastAtr = null;
+let lastEma200 = null, lastEma50 = null, lastRsi = null;
 
 async function liveTick(){
   if(!settings.apiKey || !historyCache) return;
@@ -262,12 +314,11 @@ async function liveTick(){
       document.getElementById('livePrice').textContent = '$'+fmt(live);
       drawMiniChart(historyCache, live, 30);
       if(lastR0) renderSimpleMessage(lastR0, live);
+      if(lastSt) renderChangeStats(historyCache, live, lastSt, lastCombinedScore);
       lastKnownClose = live;
 
-      const candleOpen = historyCache.closes[historyCache.closes.length-1];
-      updateCandleLegs(candleOpen, live);
-      const legDir = checkIntraCandlePattern();
-      const mainAgrees = legDir==='up' ? lastCombinedScore >= settings.scoreThreshold : legDir==='down' ? lastCombinedScore <= -settings.scoreThreshold : false;
+      const legDir = lastCombinedScore >= settings.scoreThreshold ? 'up' : lastCombinedScore <= -settings.scoreThreshold ? 'down' : null;
+      const mainAgrees = legDir!=null;
       monitorPosition(legDir, mainAgrees, live, lastR0);
     }
   }catch(e){ console.warn('live tick failed', e); }
@@ -410,13 +461,16 @@ function computeScores(data){
     }
     if(L.sr.enabled){
       let sr=0;
-      if(lastSup!=null && Math.abs(closes[i]-lastSup)<=3 && closes[i]>opens[i]) sr+=2;
-      if(lastRes!=null && Math.abs(closes[i]-lastRes)<=3 && closes[i]<opens[i]) sr-=2;
+      if(lastSup!=null && Math.abs(closes[i]-lastSup)<=settings.srProximityPts && closes[i]>opens[i]) sr+=2;
+      if(lastRes!=null && Math.abs(closes[i]-lastRes)<=settings.srProximityPts && closes[i]<opens[i]) sr-=2;
       s += sr * L.sr.weight;
     }
     scores[i]=s;
   }
-  return {scores, lastResistance:lastRes, lastSupport:lastSup, atrArr:atr(highs,lows,closes,14)};
+  return {
+    scores, lastResistance:lastRes, lastSupport:lastSup, atrArr:atr(highs,lows,closes,14),
+    ema200Last: ema200[n-1], ema50Last: ema50[n-1], closeLast: closes[n-1], rsiLast: rsiArr[n-1],
+  };
 }
 
 function matchStats(histScores, histMoves, currentScore, band){
@@ -468,17 +522,44 @@ function buildHorizon(scores, closes, bars){
 // ============================================================
 async function fetchHistory(){
   if(!settings.apiKey){ throw new Error('NO_KEY'); }
-  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(settings.symbol)}&interval=${encodeURIComponent(settings.interval)}&outputsize=1000&apikey=${encodeURIComponent(settings.apiKey)}`;
+  // Plus500's 4H candles start at 01:00/05:00/09:00/13:00/17:00/21:00 Israel time — Twelve Data's
+  // native "4h" bars do NOT align to this. So we fetch 1H bars in Israel time and build our own
+  // 4H candles by grouping every 4 hours starting at those exact boundary hours.
+  const boundaryHours = settings.candleBoundaryHours; // e.g. [1,5,9,13,17,21]
+  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(settings.symbol)}&interval=1h&outputsize=4500&timezone=${encodeURIComponent(settings.timezone)}&apikey=${encodeURIComponent(settings.apiKey)}`;
   const res = await fetch(url);
   const json = await res.json();
   if(json.status==='error' || !json.values) throw new Error(json.message || 'FETCH_ERROR');
-  const values = json.values.slice().reverse(); // oldest -> newest
+  const hourly = json.values.slice().reverse(); // oldest -> newest, each has {datetime, open, high, low, close, volume}
+
+  const groups = [];
+  let current = null;
+  for(const bar of hourly){
+    const hour = parseInt(bar.datetime.split(' ')[1].split(':')[0], 10);
+    const isBoundary = boundaryHours.includes(hour);
+    if(isBoundary || !current){
+      if(current) groups.push(current);
+      current = { open: parseFloat(bar.open), high: parseFloat(bar.high), low: parseFloat(bar.low), close: parseFloat(bar.close), volume: bar.volume?parseFloat(bar.volume):0, bars:1, startHour: hour, datetime: bar.datetime };
+    } else {
+      current.high = Math.max(current.high, parseFloat(bar.high));
+      current.low = Math.min(current.low, parseFloat(bar.low));
+      current.close = parseFloat(bar.close);
+      current.volume += bar.volume?parseFloat(bar.volume):0;
+      current.bars += 1;
+    }
+  }
+  if(current) groups.push(current);
+  // Drop the last group if it isn't a full 4-hour candle yet (still forming) — the app treats the
+  // live price separately as the forming candle, so history should only contain CLOSED 4H candles.
+  const closedGroups = (groups.length && groups[groups.length-1].bars < 4) ? groups.slice(0,-1) : groups;
+
   return {
-    closes: values.map(v=>parseFloat(v.close)),
-    highs: values.map(v=>parseFloat(v.high)),
-    lows: values.map(v=>parseFloat(v.low)),
-    opens: values.map(v=>parseFloat(v.open)),
-    volumes: values.map(v=>v.volume?parseFloat(v.volume):0),
+    closes: closedGroups.map(g=>g.close),
+    highs: closedGroups.map(g=>g.high),
+    lows: closedGroups.map(g=>g.low),
+    opens: closedGroups.map(g=>g.open),
+    volumes: closedGroups.map(g=>g.volume),
+    startHours: closedGroups.map(g=>g.startHour),
   };
 }
 async function fetchQuote(){
@@ -512,72 +593,280 @@ function loadPosState(){
 function savePosState(p){
   try{ localStorage.setItem('goldai_position', JSON.stringify(p)); }catch(e){}
 }
-function profitLossStats(entry, target, risk){
+function estimateTimeToTarget(entry, target){
+  if(!lastAtr || lastAtr<=0) return null;
+  const dist = Math.abs(target-entry);
+  const estCandles = dist / lastAtr; // rough: ATR = average movement per 4H candle
+  const estHours = estCandles * 4;
+  const chargedNights = Math.ceil(estHours/24); // one financing charge per night held, no special multiplier
+  return {estCandles, estHours, chargedNights};
+}
+
+function profitLossStats(entry, target, risk, dirUp){
   const targetPct = Math.abs(target-entry)/entry*100;
   const riskPct = Math.abs(risk-entry)/entry*100;
-  const invest = 1000; // reference amount in ILS
-  const profitIls = invest * settings.leverage * (targetPct/100);
-  const lossIls = invest * settings.leverage * (riskPct/100);
-  return {targetPct, riskPct, profitIls, lossIls};
+  const oz = 1; // fixed at 1 ounce per Plus500's base quantity, regardless of the posSize setting
+  const marginUsd = (oz * entry) / settings.leverage;
+  const grossProfitUsd = entry * (targetPct/100) * oz;
+  const grossLossUsd = entry * (riskPct/100) * oz;
+
+  const timeInfo = estimateTimeToTarget(entry, target);
+  const overnightPct = dirUp ? settings.overnightBuyPct : settings.overnightSellPct;
+  const overnightUsdPerNight = entry * (overnightPct/100) * oz;
+  const totalFinancingUsd = timeInfo ? overnightUsdPerNight * timeInfo.chargedNights : 0;
+
+  const netProfitUsd = grossProfitUsd - settings.spreadCost - settings.commissionPerTrade + totalFinancingUsd;
+  const netLossUsd = grossLossUsd + settings.spreadCost + settings.commissionPerTrade - totalFinancingUsd;
+  const usdIls = lastUsdIls || 0;
+  return {
+    targetPct, riskPct,
+    profitIls: netProfitUsd * usdIls,
+    lossIls: netLossUsd * usdIls,
+    profitPctMargin: marginUsd>0 ? (netProfitUsd/marginUsd)*100 : null,
+    lossPctMargin: marginUsd>0 ? (netLossUsd/marginUsd)*100 : null,
+    timeInfo, financingIls: totalFinancingUsd * usdIls,
+    breakdown: {
+      grossProfitIls: grossProfitUsd * usdIls,
+      grossLossIls: grossLossUsd * usdIls,
+      spreadIls: settings.spreadCost * usdIls,
+      commissionIls: settings.commissionPerTrade * usdIls,
+      financingIls: totalFinancingUsd * usdIls,
+      usdIls,
+    },
+  };
 }
-function plLine(entry, target, risk){
-  const pl = profitLossStats(entry, target, risk);
-  return `<span style="color:var(--up); font-size:13px;">רווח פוטנציאלי: +${fmt(pl.targetPct,2)}% (≈₪${fmt(pl.profitIls,0)} ל-1,000₪, מינוף 1:${settings.leverage})</span><br>` +
-    `<span style="color:var(--down); font-size:13px;">סיכון הפסד: -${fmt(pl.riskPct,2)}% (≈₪${fmt(pl.lossIls,0)} ל-1,000₪)</span>`;
+function plLine(entry, target, risk, dirUp){
+  const pl = profitLossStats(entry, target, risk, dirUp);
+  const t = pl.timeInfo;
+  const timeLine = t
+    ? `<span style="color:var(--text-dim); font-size:12px;">זמן משוער ליעד: ~${fmt(t.estHours,0)} שעות (${t.chargedNights} לילות מימון) — מימון: ${pl.financingIls>=0?'+':''}₪${fmt(pl.financingIls,0)}</span><br>`
+    : '';
+  return timeLine +
+    `<span style="color:var(--down); font-size:13px;">הפסד נטו: -₪${fmt(Math.abs(pl.lossIls),0)} (${pl.lossPctMargin!=null?'-'+fmt(Math.abs(pl.lossPctMargin),1)+'% על המרווח':''})</span>`;
 }
 
 function monitorPosition(legDir, mainAgrees, lastClose, r0){
   const pos = loadPosState();
   const earlyCard = document.getElementById('earlyCard');
 
-  // P% engine agreement: block if the probability engine has enough data and actively
-  // points the OPPOSITE way; otherwise show its % as supporting context.
-  const probContradicts = r0 && r0.enough && ((legDir==='up' && r0.dir==='down') || (legDir==='down' && r0.dir==='up'));
-  const probLine = (r0 && r0.dir===legDir && r0.prob!=null) ? `הסתברות P%: ${fmt(r0.prob,1)}% (תואם)`
-    : (r0 && r0.enough) ? `הסתברות P%: ${fmt(r0.prob,1)}% (טווח נר שלם, לא זהה לתבנית)`
-    : `הסתברות P%: אוספת עדיין נתונים`;
+  const probLine = (r0 && r0.prob!=null) ? `הסתברות P%: ${fmt(r0.prob,1)}%` : `הסתברות P%: אוספת עדיין נתונים`;
+
+  // Reversal at support = rejection of downside = new/continuing UP trend.
+  // Reversal at resistance = rejection of upside = new/continuing DOWN trend.
+  const reversalAtSupport = checkTwoTailReversal('support');
+  const reversalAtResistance = checkTwoTailReversal('resistance');
 
   if(!pos || !pos.open){
-    if(legDir && mainAgrees && !probContradicts){
-      const target = legDir==='up'
-        ? (lastResistance && lastResistance>lastClose ? lastResistance : lastClose + lastAtr*1.5)
-        : (lastSupport && lastSupport<lastClose ? lastSupport : lastClose - lastAtr*1.5);
-      const risk = legDir==='up'
-        ? (lastSupport && lastSupport<lastClose ? lastSupport : lastClose - lastAtr)
-        : (lastResistance && lastResistance>lastClose ? lastResistance : lastClose + lastAtr);
-      savePosState({open:true, dir:legDir, entry:lastClose, target, risk});
-      const dirLabel = legDir==='up' ? '🟢 LONG (קנייה)' : '🔴 SHORT (מכירה)';
-      document.getElementById('earlyMsg').innerHTML = `${dirLabel} — פתחי עכשיו<br>` +
+    const entryDir = reversalAtSupport ? 'up' : reversalAtResistance ? 'down' : null;
+    if(entryDir){
+      const stopDist = lastAtr * settings.atrStopMult;
+      let targetDist = entryDir==='up'
+        ? (lastResistance && lastResistance>lastClose ? lastResistance-lastClose : stopDist*2)
+        : (lastSupport && lastSupport<lastClose ? lastClose-lastSupport : stopDist*2);
+      if(targetDist < stopDist*2) targetDist = stopDist*2;
+      const target = entryDir==='up' ? lastClose+targetDist : lastClose-targetDist;
+      const risk = entryDir==='up' ? lastClose-stopDist : lastClose+stopDist;
+
+      savePosState({open:true, dir:entryDir, entry:lastClose, target, risk});
+      const dirLabel = entryDir==='up' ? '🟢 LONG (קנייה) — היפוך במגמה' : '🔴 SHORT (מכירה) — היפוך במגמה';
+      document.getElementById('earlyMsg').innerHTML = `${dirLabel}<br>` +
         `<span style="color:var(--up)">כניסה בשער ${fmt(lastClose)}</span><br>` +
         `<span style="color:var(--gold)">יעד סגירה: ${fmt(target)}</span><br>` +
         `<span style="color:var(--down)">סטופ: ${fmt(risk)}</span><br>` +
-        plLine(lastClose, target, risk) + `<br>` +
+        `<span style="color:var(--text-dim); font-size:13px;">2 נרות עם זנב באותו אזור ${entryDir==='up'?'תמיכה':'התנגדות'}</span><br>` +
+        plLine(lastClose, target, risk, entryDir==='up') + `<br>` +
         `<span style="color:var(--text-dim); font-size:13px;">${probLine}</span>`;
       earlyCard.style.display = 'block';
-      notify('Gold AI - פתחי פוזיציה', `${legDir==='up'?'LONG':'SHORT'} בשער ${fmt(lastClose)}, יעד ${fmt(target)}, סטופ ${fmt(risk)}`);
+      notify('Gold AI - פתחי פוזיציה', `${entryDir==='up'?'LONG':'SHORT'} בשער ${fmt(lastClose)} — היפוך מגמה`);
     } else {
       earlyCard.style.display = 'none';
     }
     return;
   }
 
-  // position is open - show it, and watch for target/stop
+  // position is open - show it, and watch for target/stop/trend-end
   const dirLabel = pos.dir==='up' ? '🟢 LONG פתוח' : '🔴 SHORT פתוח';
   document.getElementById('earlyMsg').innerHTML = `${dirLabel} מאז ${fmt(pos.entry)}<br>` +
     `<span style="color:var(--gold)">יעד: ${fmt(pos.target)} | סטופ: ${fmt(pos.risk)}</span><br>` +
     `<span style="color:var(--text-dim);">מחיר נוכחי: ${fmt(lastClose)}</span><br>` +
-    plLine(pos.entry, pos.target, pos.risk) + `<br>` +
+    plLine(pos.entry, pos.target, pos.risk, pos.dir==='up') + `<br>` +
     `<span style="color:var(--text-dim); font-size:13px;">${probLine}</span>`;
   earlyCard.style.display = 'block';
 
   const hitTarget = pos.dir==='up' ? lastClose>=pos.target : lastClose<=pos.target;
   const hitStop = pos.dir==='up' ? lastClose<=pos.risk : lastClose>=pos.risk;
+  // Trend ending: LONG ends on a resistance-rejection tail pair; SHORT ends on a support-rejection tail pair.
+  const trendEnding = pos.dir==='up' ? reversalAtResistance : reversalAtSupport;
   if(hitTarget){
     notify('Gold AI - סגרי פוזיציה (יעד)', `הגעת ליעד בשער ${fmt(lastClose)} - זה הזמן לסגור ברווח`);
     savePosState({open:false});
   } else if(hitStop){
     notify('Gold AI - סגרי פוזיציה (סטופ)', `הגעת לסטופ בשער ${fmt(lastClose)} - זה הזמן לסגור ולהגביל הפסד`);
     savePosState({open:false});
+  } else if(trendEnding){
+    notify('Gold AI - סגרי פוזיציה (סוף מגמה)', `2 נרות עם זנב באותו אזור - המגמה נראית מסתיימת, מומלץ לסגור בשער ${fmt(lastClose)}`);
+    savePosState({open:false});
+  }
+}
+
+// Core signal: TWO closed candles, both with a significant TAIL (wick) reaching the SAME
+// support or resistance zone — a real rejection at that level, not just candle color.
+// Used for BOTH entry (a new trend starting) and exit (the current trend ending).
+function hasTailAtZone(idx, zoneType){
+  if(!historyCache || !lastAtr) return false;
+  const zone = zoneType==='support' ? lastSupport : lastResistance;
+  if(zone==null) return false;
+  const o = historyCache.opens[idx], h = historyCache.highs[idx], l = historyCache.lows[idx], c = historyCache.closes[idx];
+  if(zoneType==='support'){
+    const lowerTail = Math.min(o,c) - l;
+    return lowerTail >= lastAtr*settings.tailAtrMult && Math.abs(l-zone) <= settings.srProximityPts;
+  } else {
+    const upperTail = h - Math.max(o,c);
+    return upperTail >= lastAtr*settings.tailAtrMult && Math.abs(h-zone) <= settings.srProximityPts;
+  }
+}
+function checkTwoTailReversal(zoneType){
+  if(!historyCache) return false;
+  const n = historyCache.closes.length;
+  if(n<2) return false;
+  return hasTailAtZone(n-1, zoneType) && hasTailAtZone(n-2, zoneType);
+}
+
+function getCurrentHourInTz(tz){
+  try{
+    const parts = new Intl.DateTimeFormat('en-US', {timeZone: tz, hour:'2-digit', hour12:false}).formatToParts(new Date());
+    const h = parts.find(p=>p.type==='hour').value;
+    return parseInt(h,10) % 24;
+  }catch(e){ return new Date().getHours(); }
+}
+
+function renderChangeStats(data, lastClose, st, currentScore){
+  const closes = data.closes;
+  // Daily change = from the OPEN of the day's first 4H candle (the earliest boundary hour, e.g. 01:00)
+  const dayStartHour = settings.candleBoundaryHours[0];
+  const currentHour = getCurrentHourInTz(settings.timezone);
+  const candleOpenNow = closes[closes.length-1]; // open of the still-forming candle
+  let dayOpen = null;
+  if(currentHour === dayStartHour){
+    dayOpen = candleOpenNow; // the forming candle itself IS the day's first candle
+  } else if(data.startHours){
+    for(let i=data.startHours.length-1; i>=0; i--){
+      if(data.startHours[i] === dayStartHour){ dayOpen = data.opens[i]; break; }
+    }
+  }
+  if(dayOpen!=null){
+    const dailyPct = (lastClose - dayOpen)/dayOpen*100;
+    const el = document.getElementById('chgDaily');
+    el.textContent = (dailyPct>=0?'+':'') + fmt(dailyPct,2) + '%';
+    el.style.color = dailyPct>=0 ? 'var(--up)' : 'var(--down)';
+  }
+  // Current (still-forming) 4H candle change from its own open
+  const candleOpen = closes[closes.length-1];
+  const candlePct = (lastClose - candleOpen)/candleOpen*100;
+  const elC = document.getElementById('chgCandle');
+  elC.textContent = (candlePct>=0?'+':'') + fmt(candlePct,2) + '%';
+  elC.style.color = candlePct>=0 ? 'var(--up)' : 'var(--down)';
+
+  // Expected move to close, for the current direction. When a position is actually open, use its
+  // real entry/target. Otherwise, anchor to the ANTICIPATED ENTRY ZONE (support/resistance) —
+  // not the current live price — since that's where entry could actually trigger per our indicators.
+  const scoreDir = currentScore >= 0 ? 'up' : 'down';
+  const elE = document.getElementById('chgExpected');
+  const elEP = document.getElementById('chgExpectedPrices');
+  const pos = loadPosState();
+  const hasActivePos = pos && pos.open;
+  const rawZone = scoreDir==='up' ? lastSupport : lastResistance;
+  const zoneEntryPrice = (rawZone!=null && lastAtr && Math.abs(lastClose-rawZone) <= lastAtr*settings.maxZoneAtrMult) ? rawZone : null;
+
+  let barEntry = null, barTarget = null, barRisk = null, barDirUp = scoreDir==='up';
+
+  if(hasActivePos){
+    barEntry = pos.entry; barTarget = pos.target; barRisk = pos.risk; barDirUp = pos.dir==='up';
+    const pct = Math.abs(pos.target-pos.entry)/pos.entry*100;
+    elE.textContent = (barDirUp?'+':'-') + fmt(pct,2) + '% (' + (barDirUp?'LONG':'SHORT') + ', פוזיציה פעילה)';
+    elE.style.color = barDirUp ? 'var(--up)' : 'var(--down)';
+    elEP.textContent = `משער כניסה ${fmt(pos.entry)} עד שער יעד ${fmt(pos.target)}`;
+  } else if(zoneEntryPrice!=null && lastAtr){
+    const stopDist = lastAtr * settings.atrStopMult;
+    let targetDist = scoreDir==='up'
+      ? (lastResistance && lastResistance>zoneEntryPrice ? lastResistance-zoneEntryPrice : stopDist*2)
+      : (lastSupport && lastSupport<zoneEntryPrice ? zoneEntryPrice-lastSupport : stopDist*2);
+    if(targetDist < stopDist*2) targetDist = stopDist*2;
+    barEntry = zoneEntryPrice;
+    barTarget = scoreDir==='up' ? zoneEntryPrice+targetDist : zoneEntryPrice-targetDist;
+    barRisk = scoreDir==='up' ? zoneEntryPrice-stopDist : zoneEntryPrice+stopDist;
+    const pct = (targetDist/zoneEntryPrice)*100;
+    elE.textContent = (scoreDir==='up'?'+':'-') + fmt(pct,2) + '% (' + (scoreDir==='up'?'LONG':'SHORT') + ', צפי מאזור כניסה עתידי — לא המלצה בפועל)';
+    elE.style.color = scoreDir==='up' ? 'var(--up)' : 'var(--down)';
+    elEP.textContent = `מאזור כניסה צפוי ${fmt(barEntry)} עד שער יעד ${fmt(barTarget)}`;
+  } else {
+    elE.textContent = 'אין עדיין אזור תמיכה/התנגדות מזוהה';
+    elE.style.color = 'var(--text-dim)';
+    elEP.textContent = '';
+  }
+
+  // ---- Target bar: entry zone (or real entry) -> current price -> target — one tidy grid of labels ----
+  const tgFill = document.getElementById('tgFill');
+  const tgEntryMark = document.getElementById('tgEntryMark');
+  const tgNowMark = document.getElementById('tgNowMark');
+  const tgLabels = document.getElementById('tgLabels');
+  if(barTarget!=null && barEntry!=null){
+    const lo = Math.min(barEntry, barTarget, lastClose);
+    const hi = Math.max(barEntry, barTarget, lastClose);
+    const pad = (hi-lo)*0.15 || 1;
+    const min = lo-pad, max = hi+pad;
+    const pct = v => Math.max(0,Math.min(100, ((v-min)/(max-min))*100));
+    const entryPct = pct(barEntry);
+    const nowPct = pct(lastClose);
+    const fillFrom = barDirUp ? entryPct : nowPct;
+    const fillTo = barDirUp ? nowPct : entryPct;
+    tgFill.style.marginLeft = Math.min(fillFrom,fillTo) + '%';
+    tgFill.style.width = Math.abs(fillTo-fillFrom) + '%';
+    tgFill.style.background = barDirUp ? 'var(--up)' : 'var(--down)';
+    tgEntryMark.style.left = entryPct + '%';
+    tgNowMark.style.left = nowPct + '%';
+    const entryTitle = hasActivePos ? 'כניסה בפועל' : 'אזור כניסה צפוי';
+    tgLabels.innerHTML =
+      `<div class="grid2" style="direction:rtl; gap:6px;">` +
+        `<div class="stat" style="padding:8px;"><div class="lbl" style="color:var(--gold);">${entryTitle}</div><div class="val" style="font-size:13px;">${fmt(barEntry)}</div></div>` +
+        `<div class="stat" style="padding:8px;"><div class="lbl">מחיר נוכחי</div><div class="val" style="font-size:13px;">${fmt(lastClose)}</div></div>` +
+        `<div class="stat" style="padding:8px;"><div class="lbl" style="color:${barDirUp?'var(--up)':'var(--down)'};">יעד</div><div class="val" style="font-size:13px;">${fmt(barTarget)}</div></div>` +
+      `</div>`;
+  } else {
+    tgFill.style.width = '0%'; tgFill.style.marginLeft = '0%';
+    tgEntryMark.style.left = '-10%'; tgNowMark.style.left = '-10%';
+    tgLabels.innerHTML = `<span style="color:var(--text-dim);">אין עדיין מספיק נתונים לחישוב יעד</span>`;
+  }
+
+  // Buying 1 ounce: profit/loss using the EXACT SAME entry/target/risk as the forecast above
+  // (real position when open, otherwise the anticipated entry-zone projection) — never a separate number.
+  if(barEntry!=null && barTarget!=null && barRisk!=null && lastUsdIls){
+    const pl = profitLossStats(barEntry, barTarget, barRisk, barDirUp);
+    const recommendedCapital = Math.abs(pl.lossIls) / (settings.riskPercentPerTrade/100);
+
+    document.getElementById('capProfitIls').textContent = '+₪' + fmt(pl.profitIls,0);
+    document.getElementById('capLossIls').textContent = '-₪' + fmt(Math.abs(pl.lossIls),0);
+    document.getElementById('capProfitPctMargin').textContent = pl.profitPctMargin!=null ? ('+' + fmt(pl.profitPctMargin,1) + '%') : '-';
+    document.getElementById('capLossPctMargin').textContent = pl.lossPctMargin!=null ? ('-' + fmt(Math.abs(pl.lossPctMargin),1) + '%') : '-';
+    document.getElementById('capRecommendedIls').textContent = '₪' + fmt(recommendedCapital,0);
+    document.getElementById('capExplain').textContent = `1 אונקיה (בסיס פלוס500), ${barDirUp?'LONG':'SHORT'}, מינוף 1:${settings.leverage}, כולל ספרד, עמלה, ומימון לילה משוער (לפי זמן ליעד). אותו שער כניסה/יעד/סטופ כמו למעלה.`;
+
+    const b = pl.breakdown;
+    const t = pl.timeInfo;
+    document.getElementById('capBreakdown').innerHTML =
+      `<div style="display:flex; justify-content:space-between;"><span style="color:var(--text-dim);">רווח גולמי (לפני עלויות)</span><span style="color:var(--up);">+₪${fmt(b.grossProfitIls,0)}</span></div>` +
+      `<div style="display:flex; justify-content:space-between;"><span style="color:var(--text-dim);">ספרד ($${fmt(settings.spreadCost,2)} × שער ${fmt(b.usdIls,3)})</span><span style="color:var(--down);">-₪${fmt(b.spreadIls,0)}</span></div>` +
+      (settings.commissionPerTrade>0 ? `<div style="display:flex; justify-content:space-between;"><span style="color:var(--text-dim);">עמלת פתיחה+סגירה</span><span style="color:var(--down);">-₪${fmt(b.commissionIls,0)}</span></div>` : '') +
+      (t ? `<div style="display:flex; justify-content:space-between;"><span style="color:var(--text-dim);">מימון לילה (${t.chargedNights} לילות, ~${fmt(t.estHours,0)} שעות ליעד)</span><span style="color:${b.financingIls>=0?'var(--up)':'var(--down)'};">${b.financingIls>=0?'+':'-'}₪${fmt(Math.abs(b.financingIls),0)}</span></div>` : '') +
+      `<div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); margin-top:4px; padding-top:4px; font-weight:700;"><span>רווח נטו סופי</span><span style="color:var(--up);">+₪${fmt(pl.profitIls,0)}</span></div>`;
+  } else {
+    document.getElementById('capProfitIls').textContent = '-';
+    document.getElementById('capLossIls').textContent = '-';
+    document.getElementById('capProfitPctMargin').textContent = '-';
+    document.getElementById('capLossPctMargin').textContent = '-';
+    document.getElementById('capRecommendedIls').textContent = '-';
+    document.getElementById('capExplain').textContent = lastUsdIls ? 'אין עדיין מספיק נתונים לחישוב' : 'ממתין לשער דולר-שקל';
+    document.getElementById('capBreakdown').innerHTML = '';
   }
 }
 
@@ -654,28 +943,30 @@ function renderSimpleMessage(r0, lastClose){
   document.getElementById('simpleMsg').innerHTML = simpleHtml;
 }
 
-// Track live price crossing the CURRENT (still-forming) 4H candle's own open price.
-// Pattern: below-open, above-open, below-open, above-open, and currently still above (green) -> LONG.
-// Mirror for SHORT. Confirmed against the main trend/momentum score, not used alone.
-let candleState = {openPrice:null, legs:[], lastSide:null};
-let lastCombinedScore = 0, lastResistance = null, lastSupport = null, lastAtr = null;
+// Track the current (still-forming) 4H candle's high/low reached so far, live tick by tick.
+// Pattern: an "impressive" tail forms (price extends well beyond the open in one direction, relative
+// to typical volatility), then price turns back and is now on the OTHER side of the open — a
+// rejection/reversal signal (like a pin bar / hammer, but tracked live instead of waiting for close).
+let candleState = {openPrice:null, high:null, low:null};
 
 function updateCandleLegs(openPrice, livePrice){
   if(candleState.openPrice !== openPrice){
-    candleState = {openPrice, legs:[], lastSide:null};
+    candleState = {openPrice, high: livePrice, low: livePrice};
   }
-  const side = livePrice >= openPrice ? 'up' : 'down';
-  if(candleState.lastSide && side !== candleState.lastSide){
-    candleState.legs.push(side);
-  }
-  candleState.lastSide = side;
+  candleState.high = Math.max(candleState.high, livePrice);
+  candleState.low = Math.min(candleState.low, livePrice);
 }
 function checkIntraCandlePattern(){
-  const legs = candleState.legs;
-  if(legs.length < 4) return null;
-  const last4 = legs.slice(-4);
-  if(last4[0]==='down'&&last4[1]==='up'&&last4[2]==='down'&&last4[3]==='up'&&candleState.lastSide==='up') return 'up';
-  if(last4[0]==='up'&&last4[1]==='down'&&last4[2]==='up'&&last4[3]==='down'&&candleState.lastSide==='down') return 'down';
+  if(candleState.openPrice==null || !lastAtr) return null;
+  const tailMult = settings.tailAtrMult;
+  const lowerTail = candleState.openPrice - candleState.low;   // how far it dipped below the open
+  const upperTail = candleState.high - candleState.openPrice;  // how far it spiked above the open
+  const liveIsAboveOpen = lastKnownClose!=null && lastKnownClose > candleState.openPrice;
+  const liveIsBelowOpen = lastKnownClose!=null && lastKnownClose < candleState.openPrice;
+  // Impressive lower tail, but price has turned back UP through the open -> bullish rejection
+  if(lowerTail >= lastAtr*tailMult && liveIsAboveOpen) return 'up';
+  // Impressive upper tail, but price has turned back DOWN through the open -> bearish rejection
+  if(upperTail >= lastAtr*tailMult && liveIsBelowOpen) return 'down';
   return null;
 }
 
@@ -701,11 +992,13 @@ function renderProbabilityMeter(st, score, legDir, mainAgrees, r0){
   lbl.style.color = displayDir==='up' ? 'var(--up)' : 'var(--down)';
   lbl.textContent = fmt(entryProbability,1) + '% ' + (displayDir==='up' ? 'LONG' : 'SHORT');
 
-  const patternConfirms = legDir === scoreDir && mainAgrees;
+  const seq = legDir ? checkSequentialSetup(legDir, lastKnownClose) : null;
   const explainParts = [];
   explainParts.push(`ציון: ${fmt(score,1)}`);
   explainParts.push(st.count>=settings.minSamples ? `P%: ${fmt(scoreDir==='up'?st.probUp:100-st.probUp,1)}%` : 'P%: אוסף נתונים');
-  explainParts.push(patternConfirms ? 'תבנית בנר: מאשרת ✓' : 'תבנית בנר: לא בוצעה');
+  if(legDir && seq){
+    explainParts.push(`מגמה(EMA200): ${seq.trendOk?'✓':'✗'} | אזור: ${seq.zoneOk?'✓':'✗'} | RSI: ${seq.momentumOk?'✓':'✗'}`);
+  }
   document.getElementById('pmExplain').textContent = explainParts.join(' | ');
 
   // Alert once when the SAME decision that drives the top message actually fires
@@ -718,12 +1011,44 @@ function renderProbabilityMeter(st, score, legDir, mainAgrees, r0){
 }
 
 // ============================================================
+// SEQUENTIAL SETUP CHECK (Trend -> Zone -> Trigger -> Momentum -> Stop/Target)
+// Trend: EMA200 sets direction. Zone: price is back at support(long)/resistance(short).
+// Trigger: the live tail-rejection pattern confirms. Momentum: RSI above/below 50 (not 70/30).
+// Stop/Target: ATR-based stop, target enforced at minimum 1:2 reward:risk.
+// ============================================================
+function checkSequentialSetup(legDir, lastClose){
+  if(legDir==null || lastEma200==null || lastRsi==null || lastAtr==null) return {valid:false};
+
+  const trendOk = legDir==='up' ? lastClose > lastEma200 : lastClose < lastEma200;
+  const zoneOk = legDir==='up'
+    ? (lastSupport!=null && Math.abs(lastClose-lastSupport) <= settings.srProximityPts)
+    : (lastResistance!=null && Math.abs(lastClose-lastResistance) <= settings.srProximityPts);
+  const momentumOk = legDir==='up' ? lastRsi > 50 : lastRsi < 50;
+  // EMA50 vs EMA200 as a secondary confirmation only (strengthens, never blocks alone)
+  const ema50Confirms = lastEma50!=null && (legDir==='up' ? lastEma50 > lastEma200 : lastEma50 < lastEma200);
+
+  const valid = trendOk && zoneOk && momentumOk; // the trigger itself (legDir) already required the tail pattern
+
+  const stopDist = lastAtr * settings.atrStopMult;
+  let targetDist = legDir==='up'
+    ? (lastResistance && lastResistance>lastClose ? lastResistance-lastClose : stopDist*2)
+    : (lastSupport && lastSupport<lastClose ? lastClose-lastSupport : stopDist*2);
+  // Enforce minimum 1:2 reward:risk — if the natural S/R target is closer than that, extend it.
+  if(targetDist < stopDist*2) targetDist = stopDist*2;
+
+  const target = legDir==='up' ? lastClose+targetDist : lastClose-targetDist;
+  const risk = legDir==='up' ? lastClose-stopDist : lastClose+stopDist;
+
+  return {valid, trendOk, zoneOk, momentumOk, ema50Confirms, target, risk, rr: targetDist/stopDist};
+}
+
+// ============================================================
 // RENDER
 // ============================================================
 function fmt(n, d=2){ return n==null || isNaN(n) ? '-' : n.toFixed(d); }
 
 function renderBanner(msg, type){
-  document.getElementById('banners').innerHTML = `<div class="banner ${type}">${msg}</div>`;
+  document.getElementById('banners').innerHTML += `<div class="banner ${type}">${msg}</div>`;
 }
 function clearBanner(){ document.getElementById('banners').innerHTML=''; }
 
@@ -775,7 +1100,8 @@ function renderLayersSettings(){
 function fillSettingsForm(){
   document.getElementById('apiKey').value = settings.apiKey;
   document.getElementById('symbol').value = settings.symbol;
-  document.getElementById('interval').value = settings.interval;
+  document.getElementById('timezone').value = settings.timezone;
+  document.getElementById('candleBoundaryHours').value = settings.candleBoundaryHours.join(',');
   document.getElementById('refreshMinutes').value = settings.refreshMinutes;
   document.getElementById('scoreBand').value = settings.scoreBand;
   document.getElementById('maxSamples').value = settings.maxSamples;
@@ -783,19 +1109,28 @@ function fillSettingsForm(){
   document.getElementById('minEdge').value = settings.minEdge;
   document.getElementById('minProb').value = settings.minProb;
   document.getElementById('barsH1').value = settings.barsH1;
-  document.getElementById('barsH2').value = settings.barsH2;
-  document.getElementById('barsH3').value = settings.barsH3;
   document.getElementById('posSize').value = settings.posSize;
   document.getElementById('leverage').value = settings.leverage;
   document.getElementById('spreadCost').value = settings.spreadCost;
+  document.getElementById('commissionPerTrade').value = settings.commissionPerTrade;
   document.getElementById('maintPct').value = settings.maintPct;
+  document.getElementById('riskPercentPerTrade').value = settings.riskPercentPerTrade;
+  document.getElementById('riskPercentPerTrade').value = settings.riskPercentPerTrade;
   document.getElementById('scoreThreshold').value = settings.scoreThreshold;
+  document.getElementById('tailAtrMult').value = settings.tailAtrMult;
+  document.getElementById('srProximityPts').value = settings.srProximityPts;
+  document.getElementById('atrStopMult').value = settings.atrStopMult;
+  document.getElementById('maxZoneAtrMult').value = settings.maxZoneAtrMult;
+  document.getElementById('overnightBuyPct').value = settings.overnightBuyPct;
+  document.getElementById('overnightSellPct').value = settings.overnightSellPct;
   renderLayersSettings();
 }
 function readSettingsForm(){
   settings.apiKey = document.getElementById('apiKey').value.trim();
   settings.symbol = document.getElementById('symbol').value.trim() || 'XAU/USD';
-  settings.interval = document.getElementById('interval').value.trim() || '4h';
+  settings.timezone = document.getElementById('timezone').value.trim() || 'Asia/Jerusalem';
+  settings.candleBoundaryHours = document.getElementById('candleBoundaryHours').value.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+  if(settings.candleBoundaryHours.length===0) settings.candleBoundaryHours = [1,5,9,13,17,21];
   settings.refreshMinutes = parseFloat(document.getElementById('refreshMinutes').value)||15;
   settings.scoreBand = parseFloat(document.getElementById('scoreBand').value)||2.5;
   settings.maxSamples = parseInt(document.getElementById('maxSamples').value)||300;
@@ -803,13 +1138,20 @@ function readSettingsForm(){
   settings.minEdge = parseFloat(document.getElementById('minEdge').value)||0.15;
   settings.minProb = parseFloat(document.getElementById('minProb').value)||55;
   settings.barsH1 = parseInt(document.getElementById('barsH1').value)||1;
-  settings.barsH2 = parseInt(document.getElementById('barsH2').value)||6;
-  settings.barsH3 = parseInt(document.getElementById('barsH3').value)||30;
   settings.posSize = parseFloat(document.getElementById('posSize').value)||1;
   settings.leverage = parseFloat(document.getElementById('leverage').value)||150;
   settings.spreadCost = parseFloat(document.getElementById('spreadCost').value)||0.88;
+  settings.commissionPerTrade = parseFloat(document.getElementById('commissionPerTrade').value)||0;
   settings.maintPct = parseFloat(document.getElementById('maintPct').value)||0.33;
+  settings.riskPercentPerTrade = parseFloat(document.getElementById('riskPercentPerTrade').value)||1;
+  settings.riskPercentPerTrade = parseFloat(document.getElementById('riskPercentPerTrade').value)||1;
   settings.scoreThreshold = parseFloat(document.getElementById('scoreThreshold').value)||4;
+  settings.tailAtrMult = parseFloat(document.getElementById('tailAtrMult').value)||1.0;
+  settings.srProximityPts = parseFloat(document.getElementById('srProximityPts').value)||3;
+  settings.atrStopMult = parseFloat(document.getElementById('atrStopMult').value)||1.0;
+  settings.maxZoneAtrMult = parseFloat(document.getElementById('maxZoneAtrMult').value)||8;
+  settings.overnightBuyPct = parseFloat(document.getElementById('overnightBuyPct').value)||-0.0319;
+  settings.overnightSellPct = parseFloat(document.getElementById('overnightSellPct').value)||-0.0120;
 }
 
 // ============================================================
@@ -823,19 +1165,26 @@ async function refreshAll(){
     document.getElementById('statusLine').textContent = 'ממתין למפתח API';
     return;
   }
+  const currentHourNow = getCurrentHourInTz(settings.timezone);
+  const dayStartHourNow = settings.candleBoundaryHours[0];
+  const marketClosed = currentHourNow < dayStartHourNow; // e.g. 00:xx, before 01:00
+  if(marketClosed){
+    renderBanner(`השוק סגור כרגע (${String(dayStartHourNow-1).padStart(2,'0')}:00-${String(dayStartHourNow).padStart(2,'0')}:00) - הנתונים עשויים להיות לא מעודכנים עד שהמסחר ייפתח מחדש.`, 'warn');
+  }
   try{
     historyCache = await fetchHistory();
     const live = await fetchQuote();
     const usdIls = await fetchUsdIls();
     lastUsdIls = usdIls;
     const {closes, highs, lows, opens} = historyCache;
-    if(closes.length < settings.barsH3 + settings.minSamples){
-      renderBanner('אין עדיין מספיק נתוני היסטוריה עבור טווח השבוע - חלק מהתחזיות יראו "אוסף נתונים".', 'warn');
+    if(closes.length < settings.maxSamples + settings.minSamples){
+      renderBanner('אין עדיין מספיק נתוני היסטוריה (בנרות 4 שעות) - ה-P% עשוי להראות "אוסף נתונים" עד שיצטבר מספיק.', 'warn');
     }
-    const {scores, lastResistance:lr, lastSupport:ls, atrArr} = computeScores(historyCache);
+    const {scores, lastResistance:lr, lastSupport:ls, atrArr, ema200Last, ema50Last, rsiLast} = computeScores(historyCache);
     const currentScore = scores[scores.length-1];
     const lastClose = live || closes[closes.length-1];
     lastCombinedScore = currentScore; lastResistance = lr; lastSupport = ls; lastAtr = atrArr[atrArr.length-1];
+    lastEma200 = ema200Last; lastEma50 = ema50Last; lastRsi = rsiLast;
     drawMiniChart(historyCache, lastClose, 30);
 
     const {hs,hm} = buildHorizon(scores, closes, settings.barsH1);
@@ -843,12 +1192,12 @@ async function refreshAll(){
     const r0 = decide(st);
     lastR0 = r0; lastKnownClose = lastClose;
     renderSimpleMessage(r0, lastClose);
+    renderChangeStats(historyCache, lastClose, st, currentScore);
+    lastSt = st;
 
-    // ---- INTRA-CANDLE PATTERN + POSITION MONITOR (open/close, both directions) ----
-    const candleOpen = closes[closes.length-1]; // open of the still-forming 4H candle = previous close
-    updateCandleLegs(candleOpen, lastClose);
-    const legDir = checkIntraCandlePattern();
-    const mainAgrees = legDir==='up' ? lastCombinedScore >= settings.scoreThreshold : legDir==='down' ? lastCombinedScore <= -settings.scoreThreshold : false;
+    // ---- POSITION MONITOR (open/close, both directions) — direction from score, trend/zone/momentum framework required ----
+    const legDir = lastCombinedScore >= settings.scoreThreshold ? 'up' : lastCombinedScore <= -settings.scoreThreshold ? 'down' : null;
+    const mainAgrees = legDir!=null;
     renderProbabilityMeter(st, currentScore, legDir, mainAgrees, r0);
     monitorPosition(legDir, mainAgrees, lastClose, r0);
 
